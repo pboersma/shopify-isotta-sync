@@ -1,0 +1,37 @@
+steps:
+  # Step 1: Build Docker image using your Dockerfile
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      [
+        'build',
+        '-t',
+        'europe-west4-docker.pkg.dev/productimp-429215/cloud-run-source-deploy/shopify-isotta-sync',
+        '.'
+      ]
+
+  # Step 2: Push Docker image to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      [
+        'push',
+        'europe-west4-docker.pkg.dev/productimp-429215/cloud-run-source-deploy/shopify-isotta-sync'
+      ]
+
+  # Step 3: Deploy to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'shopify-isotta-sync'
+      - '--image'
+      - 'europe-west4-docker.pkg.dev/productimp-429215/cloud-run-source-deploy/shopify-isotta-sync'
+      - '--region'
+      - 'europe-west3'
+      - '--platform=managed'
+      - '--allow-unauthenticated'
+      - '--set-env-vars=SHOPIFY_STORE_URL=https://e42158-3.myshopify.com'
+      - '--set-secrets=SHOPIFY_ACCESS_TOKEN=shopify-token:latest'
+
+images:
+  - 'europe-west4-docker.pkg.dev/productimp-429215/cloud-run-source-deploy/shopify-isotta-sync'
